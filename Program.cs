@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Archipelago.PCSX2;
 using Archipelago.Core.Models;
-using static Sly1AP.Models.ArchipelagoOptions;
+using Sly1AP.Models;
 using Archipelago.Core.Util;
 using Newtonsoft.Json;
 using System;
@@ -21,9 +21,6 @@ namespace Sly1AP
     {
         public static string GameVersion { get; set; } = "0";
         public static bool IsConnected { get; set; } = false;
-        public static int StartingEpisode { get; set; } = 1;
-        public static bool IncludeHourglasses { get; set; } = true;
-        public static bool AlwaysSpawnHourglasses { get; set; } = false;
         public static ArchipelagoClient Client { get; set; }
         public static GameState CurrentGameState = new GameState();
         public static async Task Main()
@@ -35,11 +32,11 @@ namespace Sly1AP
 
             await Initialise();
 
-            //Console.WriteLine("Beginning main loop.");
-            //while (true)
-            //{
-                //Thread.Sleep(1);
-            //}
+            Console.WriteLine("Beginning main loop.");
+            while (true)
+            {
+                Thread.Sleep(1);
+            }
         }
 
         private static async Task Initialise()
@@ -70,27 +67,20 @@ namespace Sly1AP
             var locations = Helpers.GetLocations();
             Client.PopulateLocations(locations);
             await Client.Login(playerName, password);
-            ConfigureOptions(Client.Options);
+            //ConfigureOptions(Client.Options);
+            Client.ItemReceived += (e, args) =>
+            {
+                Console.WriteLine($"Received: + {JsonConvert.SerializeObject(args.Item)}");
+            };
             return true;
         }
         public static async void ConfigureOptions(Dictionary<string, object> options)
         {
+            var Options = new ArchipelagoOptions();
             if (options == null)
             {
                 Console.WriteLine("Options dictionary is null.");
                 return;
-            }
-            if (options.ContainsKey("StartingEpisode"))
-            {
-                StartingEpisode = Convert.ToInt32(options["StartingEpisode"]);
-            }
-            if (options.ContainsKey("IncludeHourglasses"))
-            {
-                IncludeHourglasses = Convert.ToBoolean(options["IncludeHourglasses"]);
-            }
-            if (options.ContainsKey("AlwaysSpawnHourglasses"))
-            {
-                AlwaysSpawnHourglasses = Convert.ToBoolean(options["AlwaysSpawnHourglasses"]);
             }
         }
     }
